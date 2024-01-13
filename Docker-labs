@@ -436,6 +436,16 @@ services:
 
 docker-compose -f docker-compose.yaml up
 
+++++++++++++++++++++++++++++++++++++++++++
+docker-compose ps 
+docker-compose up 
+docker-compose start
+docker-compose logs –f 
+docker-compose restart 
+docker-compose stop
+docker-compose down
+++++++++++++++++++++++++++++++++++++++++++
+
 http://localhost:8081
 
 docker-compose up
