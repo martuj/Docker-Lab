@@ -284,6 +284,238 @@ Task 4: Create a container with tmpfs mount and verify it
 docker run -d -it --name tmpmount --mount type=tmpfs,destination=/app nginx:latest
 docker container inspect tmpmount
 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Docker compose examples:-
+================================================================
+Dockerfile
+========================
+
+1) Dockerfile : This Dockerfile is for a Node.js application.
+-------------
+
+# Use an official Node.js runtime as a parent image
+FROM node:14
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
+
+# Install app dependencies
+RUN npm install
+
+# Copy the application code to the container
+COPY . .
+
+# Expose the port on which the app will run
+EXPOSE 3000
+
+# Define the command to run the application
+CMD ["npm", "start"]
+
+
++++++++++++++++++++++++++
+
+# Build the Docker image
+docker build -t node-app .
+
+# Run the Docker container
+docker run -p 3000:3000 node-app
+
+
+
+-------------------------------------
+2) This Dockerfile is for serving a static website using Nginx.
+-----------------------------
+
+# Use an official Nginx image as a parent image
+FROM nginx:alpine
+
+# Copy the static content to the default Nginx public folder
+COPY . /usr/share/nginx/html
+
+
++++++++++++++++++++++++++++++
+
+# Build the Docker image
+docker build -t static-website .
+
+# Run the Docker container
+docker run -p 80:80 static-website
+
+------------------------
+3) This Dockerfile is for a Java Spring Boot application.
+------------------------
+# Use an official OpenJDK runtime as a parent image
+FROM openjdk:11-jre-slim
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy the JAR file into the container
+COPY target/my-application.jar .
+
+# Expose the port on which the Spring Boot app will run
+EXPOSE 8080
+
+# Define the command to run the application
+CMD ["java", "-jar", "my-application.jar"]
+
+
+++++++++++++++++++++++++
+
+# Build the Docker image
+docker build -t spring-boot-app .
+
+# Run the Docker container
+docker run -p 8080:8080 spring-boot-app
+
+
+
+
+Docker Compose
+============================================================
+docker network create mongo-network 
+docker network ls
+
+docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password --name mongodb --net mongo-network mongo  
+  
+docker run -d -p 8081:8081 -e ME_CONFIG_MONGODB_ADMINUSERNAME=admin -e ME_CONFIG_MONGODB_ADMINPASSWORD=password --net mongo-network --name mongo-express -e ME_CONFIG_MONGODB_SERVER=mongodb mongo-express   
+
+
+
+docker run -d \
+-p 27017:27017 \
+-e MONGO_INITDB_ROOT_USERNAME=admin \
+-e MONGO_INITDB_ROOT_PASSWORD=password \
+--net mongo-network \
+--name mongodb \
+mongo 
+
+-----------
+
+docker run -d \
+-p 8081:8081 \
+-e ME_CONFIG_MONGODB_ADMINUSERNAME=admin \
+-e ME_CONFIG_MONGODB_ADMINPASSWORD=password \
+-e ME_CONFIG_MONGODB_SERVER=mongdob \
+--net mongo-network \
+--name mongo-express \
+mongo-express
+
+docker logs mongo-express  (get the credential)
+
+
+Docker Compose
+=============================
+vi mymultict.yaml
+
+version: '3'
+services:
+  
+  mongodb:
+    image: mongo
+    ports:
+     - 27017:27017
+    environment:
+     - MONGO_INITDB_ROOT_USERNAME=${MONGO_ADMIN_USER}
+     - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ADMIN_PASS}
+  mongo-express:
+    image: mongo-express
+    ports:
+     - 8081:8081
+    environment:
+     - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_ADMIN_USER}
+     - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_ADMIN_PASS}
+     - ME_CONFIG_MONGODB_SERVER=mongodb
+    depends_on:
+     - "mongodb"
+
+
+docker-compose -f docker-compose.yaml up
+
+http://localhost:8081
+
+docker-compose up
+==============================================
+
+2) Multi-Container Web Application (Node.js + MongoDB):
+
+version: '3'
+
+services:
+  web:
+    image: node:14
+    working_dir: /usr/src/app
+    command: npm start
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app:/usr/src/app
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+
+==============================================
+
+3)Java Spring Boot with MySQL:
+
+version: '3'
+
+services:
+  app:
+    image: openjdk:11-jre-slim
+    working_dir: /usr/src/app
+    command: java -jar my-application.jar
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./app:/usr/src/app
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: my_database
+      MYSQL_USER: my_user
+      MYSQL_PASSWORD: my_password
+    ports:
+      - "3306:3306"
+
+4)  WordPress with MySQL:
+
+version: '3'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: user
+      WORDPRESS_DB_PASSWORD: password
+      WORDPRESS_DB_NAME: wordpress
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
 
 
   
